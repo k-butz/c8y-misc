@@ -16,7 +16,7 @@ print_permissions_for_role () {
 
     # print prettified CSV
     if [[ -n ${filtered_roles} ]]; then
-        echo ${filtered_roles} | jq -r .role.id | sort | sed 's/^\|$/"/g' | paste -sd "," - | sed 's/,/`, `/g' | awk '{print "`"$0"`"}'
+        echo ${filtered_roles} | jq -r .role.id | sort | sed 's/^\|$/"/g' | paste -sd "," - | sed 's/,/, /g'
     else
         echo "invalid permission type"
     fi 
@@ -38,7 +38,7 @@ print_applications_for_role () {
     if [ "${has_app_mgmt_read}" = "true" ]; then
         echo "ALL"
     else
-        echo $( c8y usergroups get --id "${role}" | jq -r '.applications[].name' | sort | sed 's/^\|$/"/g' | paste -sd "," - | sed 's/,/, /g' )
+        echo $( c8y usergroups get -n --id "${role}" | jq -r '.applications[].name' | sort | sed 's/^\|$/"/g' | paste -sd "," - | sed 's/,/, /g' )
     fi
 }
 
@@ -47,8 +47,8 @@ print_markdown_role_x_permission () {
     echo '|--|--|--|--|'
     while IFS= read -r role
     do
-        echo "| ${role} | $(print_permissions_for_role "${role}" ec) | $(print_applications_for_role "${role}") | $(print_permissions_for_role "${role}" global) |"
-    done <<< "$( c8y usergroups list -n --includeAll | jq -r .name | grep '^EC ' | sort )"
+        echo "| \`${role}\` | $(print_permissions_for_role "${role}" ec) | $(print_applications_for_role "${role}") | $(print_permissions_for_role "${role}" global) |"
+    done <<< "$( c8y usergroups list -n --includeAll | jq -r .name | grep '^EC ' | sort --reverse )"
 }
 
 print_markdown_permssion_x_role () {
@@ -63,7 +63,7 @@ print_markdown_permssion_x_role () {
             | jq -r '.role.id' | sed 's/^\|$/"/g' | paste -sd "," - | sed "s/^/${role}=/" )
         role_permission_mapping="${role_permission_mapping}\n${line}"
         line=""
-    done <<< "$( c8y usergroups list -n --includeAll | jq -r .name | grep '^EC ' | sort )"
+    done <<< "$( c8y usergroups list -n --includeAll | jq -r .name | grep '^EC ' | sort --reverse )"
 
     # print header
     echo '| Permission | Roles |'

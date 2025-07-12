@@ -75,11 +75,16 @@ print_markdown_permssion_x_role () {
         roles_with_permission=$( printf "${role_permission_mapping}" \
             | grep "$permission" | awk -F "=" '{print $1}' | sed 's/^\|$/"/g' | paste -sd "," - | sed 's/,/, /g' )
         echo "| \`${permission}\` | $roles_with_permission |"
-    done <<< "$( c8y userroles getRoleReferenceCollectionFromGroup --group "admin" --includeAll | jq -r .role.id | sort )"
+    done <<< "$( c8y userroles list --includeAll | jq -r .id | sort )"
 }
 
 echo "### Permissions x Groups"
+echo ""
 print_markdown_permssion_x_role
 
+echo ""
+echo ""
+
 echo "### Groups x Permissions"
+echo ""
 print_markdown_role_x_permission
